@@ -29,10 +29,10 @@ public:
             return onEncodeOption(true);
         }
         if (option == 3) {
-            return onDecodeOption();
+            return onDecodeOption(false);
         }
         if (option == 4) {
-            return onDecodeDebugOption();
+            return onDecodeOption(true);
         }
         return onErrorInvalidOption();
     }
@@ -63,25 +63,33 @@ private:
             std::cout << "Encoded text was saved in debug mode in file: " + ENCODED_DEBUG_MODE_FILE_NAME + "\n";
         }
         else {
-            std::cout << "Encoded text was saved in in file: " + ENCODED_FILE_NAME + "\n";
+            std::cout << "Encoded text was saved in file: " + ENCODED_FILE_NAME + "\n";
         }
         std::cout << "Key-file was saved: " + KEY_FILE_NAME + "\n";
         return 0;
     }
 
-    static int onDecodeOption() {
-
-    }
-
-    static int onDecodeDebugOption() {
+    static int onDecodeOption(bool isDebugMode) {
         try {
-            std::cout << "Enter path to the file with encoded text in debug mode:\n";
+            if (isDebugMode) {
+                std::cout << "Enter path to the file with encoded text in debug mode:\n";
+            }
+            else {
+                std::cout << "Enter path to the binary file with encoded text:\n";
+            }
             std::string filePath;
             std::cin >> filePath;
             if (!std::cin) {
                 return onErrorInvalidFilePath();
             }
-            std::string encodedText = FileHelper::readEncodedTextFileDebugMode(filePath);
+
+            std::string encodedText;
+            if (isDebugMode) {
+                encodedText = FileHelper::readEncodedTextFileDebugMode(filePath);
+            }
+            else {
+                encodedText = FileHelper::readEncodedTextFile(filePath);
+            }
 
             EncryptionKey encryptionKey = FileHelper::parseKeyFile();
 
@@ -104,6 +112,7 @@ private:
             std::cout << e.what() << std::endl;
             return 1;
         }
+
 
     }
 

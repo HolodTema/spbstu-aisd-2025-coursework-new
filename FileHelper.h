@@ -43,6 +43,24 @@ public:
         return text;
     }
 
+    static std::string readEncodedTextFile(const std::string& filePath) {
+        std::ifstream in(filePath, std::ios::binary);
+        if (! in.is_open()) {
+            in.close();
+            throw UnableToOpenEncodedTextFile();
+        }
+
+        std::string result;
+
+        char charSingleByte;
+        while (in.get(charSingleByte)) {
+            std::bitset<8> bitsetSingleByte(charSingleByte);
+            result += bitsetSingleByte.to_string();
+        }
+        in.close();
+        return result;
+    }
+
     static bool saveKeyFile(const std::string& textKeyFile) {
         std::ofstream out;
         out.open(KEY_FILE_NAME);
@@ -71,7 +89,6 @@ public:
         for (int i = 0; i < residualZeroes; ++i) {
             encodedText += "0";
         }
-        std::bitset<8> bitsetToSave(encodedText);
 
         std::ofstream out;
         out.open(ENCODED_FILE_NAME, std::ios::binary);
@@ -80,8 +97,14 @@ public:
             return false;
         }
 
-        unsigned long n = bitsetToSave.to_ulong();
-        out.write(reinterpret_cast<char*>(&n), sizeof(n));
+        std::vector<unsigned char> vectorBytes(encodedText.size() / 8, 0);
+        for (int i = 0; i < encodedText.size(); ++i) {
+            if (encodedText[i] == '1') {
+                vectorBytes[i / 8] |= (1 << (7 - (i % 8)));
+            }
+        }
+
+        out.write(reinterpret_cast<const char*>(vectorBytes.data()), vectorBytes.size());
         out.close();
         return true;
     }
