@@ -32,22 +32,40 @@ public:
 
         handleEncoding(vectorCharInfo.begin(), vectorCharInfo.end(), textToEncode.size());
 
-        std::string textKeyFile = generateKeyFileText(vectorCharInfo);
+        std::unordered_map<wchar_t, std::string> mapCodes = convertCharInfoVectorToCodesMap(vectorCharInfo);
+        std::string encodedText = generateEncodedTextDebugMode(textToEncode, mapCodes);
+
+        std::string textKeyFile = generateKeyFileText(vectorCharInfo, getResidualZeroes(encodedText));
         if (!FileHelper::saveKeyFile(textKeyFile)) {
             return false;
         }
 
         if (isDebugMode) {
-            std::unordered_map<wchar_t, std::string> mapCodes = convertCharInfoVectorToCodesMap(vectorCharInfo);
-            std::string encodedText = generateEncodedTextDebugMode(textToEncode, mapCodes);
             if (!FileHelper::saveEncodedTextDebugMode(encodedText)) {
                 return false;
             }
         }
         else {
-
+            if (!FileHelper::saveEncodedText(encodedText, getResidualZeroes(encodedText))) {
+                return false;
+            }
         }
         return true;
+    }
+
+    static bool decodeTextDebugMode(const std::string& encodedText, const EncryptionKey& encryptionKey) {
+        std::wstring result;
+
+        std::string currentCode;
+        for (char ch : encodedText) {
+            currentCode += ch;
+            if (encryptionKey.getMapCodes().contains(currentCode)) {
+                result += encryptionKey.getMapCodes()[currentCode];
+                currentCode.clear();
+            }
+        }
+
+        return FileHelper::saveDecodedText(result);
     }
 
 private:
@@ -115,13 +133,13 @@ private:
         }
     }
 
-    static std::string generateKeyFileText(const std::vector<CharInfo>& vectorCharInfo) {
+    static std::string generateKeyFileText(const std::vector<CharInfo>& vectorCharInfo, int residualZeroes) {
         std::string result = "Key-file for Shannon-Fano encoding. Version ";
-        result += PROGRAM_VERSION + "\n\n";
-
+        result += PROGRAM_VERSION + "\n";
+        result += std::to_string(residualZeroes) + "\n";
         for (CharInfo charInfo : vectorCharInfo) {
             unsigned int ord = static_cast<unsigned int>(charInfo.ch);
-            result += std::to_string(ord) + " - " + charInfo.code + "\n";
+            result += std::to_string(ord) + " " + charInfo.code + "\n";
         }
         return result;
     }
@@ -140,6 +158,10 @@ private:
             result += mapCodes.at(ch);
         }
         return result;
+    }
+
+    static int getResidualZeroes(const std::string& encodedText) {
+        return encodedText.size() % 8;
     }
 };
 

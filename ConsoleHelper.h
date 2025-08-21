@@ -14,7 +14,7 @@ public:
         std::cout << "1. Encode text file\n";
         std::cout << "2. Encode text file in debug mode\n";
         std::cout << "3. Decode text file\n";
-        std::cout << "3. Decode text file in debug mode\n";
+        std::cout << "4. Decode text file in debug mode\n";
 
         int option = 0;
         std::cin >> option;
@@ -74,6 +74,36 @@ private:
     }
 
     static int onDecodeDebugOption() {
+        try {
+            std::cout << "Enter path to the file with encoded text in debug mode:\n";
+            std::string filePath;
+            std::cin >> filePath;
+            if (!std::cin) {
+                return onErrorInvalidFilePath();
+            }
+            std::string encodedText = FileHelper::readEncodedTextFileDebugMode(filePath);
+
+            EncryptionKey encryptionKey = FileHelper::parseKeyFile();
+
+            bool isSuccessful = CodeHelper::decodeTextDebugMode(encodedText, encryptionKey);
+
+            if (isSuccessful) {
+                std::cout << "Success!\n";
+                std::cout << "Decoded text was saved in file " + DECODED_FILE_NAME + "\n";
+                return 0;
+            }
+            else {
+                return onErrorUnableToDecode();
+            }
+        }
+        catch (const UnableToParseKeyFileException& e) {
+            std::cout << e.what() << std::endl;
+            return 1;
+        }
+        catch (const UnableToOpenEncodedTextFile& e) {
+            std::cout << e.what() << std::endl;
+            return 1;
+        }
 
     }
 
@@ -89,6 +119,11 @@ private:
 
     static int onErrorUnableToEncode() {
         std::cout << "Error: unable to encode this text.\n";
+        return 1;
+    }
+
+    static int onErrorUnableToDecode() {
+        std::cout << "Error: unable to decode this encoded text.\n";
         return 1;
     }
 };

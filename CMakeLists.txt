@@ -8,4 +8,6 @@ add_executable(CourseworkNew main.cpp
         CodeHelper.h
         FileHelper.h
         config.h
+        EncryptionKey.h
+        exceptions.h
 )
