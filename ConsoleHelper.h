@@ -77,21 +77,28 @@ private:
             else {
                 std::cout << "Enter path to the binary file with encoded text:\n";
             }
-            std::string filePath;
-            std::cin >> filePath;
+            std::string filePathEncodedText;
+            std::cin >> filePathEncodedText;
             if (!std::cin) {
                 return onErrorInvalidFilePath();
             }
 
             std::string encodedText;
             if (isDebugMode) {
-                encodedText = FileHelper::readEncodedTextFileDebugMode(filePath);
+                encodedText = FileHelper::readEncodedTextFileDebugMode(filePathEncodedText);
             }
             else {
-                encodedText = FileHelper::readEncodedTextFile(filePath);
+                encodedText = FileHelper::readEncodedTextFile(filePathEncodedText);
             }
 
-            EncryptionKey encryptionKey = FileHelper::parseKeyFile();
+            std::cout << "Enter path to key-file:\n";
+            std::string keyFilePath;
+            std::cin >> keyFilePath;
+            if (!std::cin) {
+                return onErrorInvalidFilePath();
+            }
+
+            EncryptionKey encryptionKey = FileHelper::parseKeyFile(keyFilePath);
 
             bool isSuccessful = CodeHelper::decodeTextDebugMode(encodedText, encryptionKey);
 

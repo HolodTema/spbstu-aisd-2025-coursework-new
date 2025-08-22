@@ -55,12 +55,12 @@ public:
 
     static bool decodeTextDebugMode(const std::string& encodedText, const EncryptionKey& encryptionKey) {
         std::wstring result;
-
         std::string currentCode;
-        for (char ch : encodedText) {
-            currentCode += ch;
-            if (encryptionKey.getMapCodes().contains(currentCode)) {
-                result += encryptionKey.getMapCodes()[currentCode];
+        std::unordered_map<std::string, wchar_t> mapCodes = encryptionKey.getMapCodes();
+        for (int i = 0; i < encodedText.size()-encryptionKey.getResidualZeroes(); ++i) {
+            currentCode += encodedText[i];
+            if (mapCodes.contains(currentCode)) {
+                result += mapCodes[currentCode];
                 currentCode.clear();
             }
         }
@@ -161,7 +161,7 @@ private:
     }
 
     static int getResidualZeroes(const std::string& encodedText) {
-        return encodedText.size() % 8;
+        return static_cast<int>(encodedText.size() % 8);
     }
 };
 

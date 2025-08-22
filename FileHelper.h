@@ -97,7 +97,7 @@ public:
             return false;
         }
 
-        std::vector<unsigned char> vectorBytes(encodedText.size() / 8, 0);
+        std::vector<unsigned char> vectorBytes((encodedText.size()+7)/ 8, 0);
         for (int i = 0; i < encodedText.size(); ++i) {
             if (encodedText[i] == '1') {
                 vectorBytes[i / 8] |= (1 << (7 - (i % 8)));
@@ -122,9 +122,9 @@ public:
         return true;
     }
 
-    static EncryptionKey parseKeyFile() {
+    static EncryptionKey parseKeyFile(const std::string& filePath) {
         std::ifstream in;
-        in.open(KEY_FILE_NAME);
+        in.open(filePath);
         if (!in.is_open()) {
             throw UnableToParseKeyFileException();
         }
