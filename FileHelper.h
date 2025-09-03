@@ -1,13 +1,12 @@
 #ifndef FILE_HELPER_H
 #define FILE_HELPER_H
+
 #include <codecvt>
 #include <fstream>
 #include <bits/stdc++.h>
 #include "config.h"
 #include "EncryptionKey.h"
 #include "exceptions.h"
-
-class EncryptionKey;
 
 class FileHelper {
 public:
@@ -135,8 +134,8 @@ public:
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::unordered_map<std::string, wchar_t> mapCodes;
         std::string line;
-        const char* delim = " ";
         while (std::getline(in, line)) {
+            const char* delim = " ";
             unsigned int charOrd = std::stoi(line.substr(0, line.find(delim)));
             std::string charCode = line.substr(line.find(delim) + 1);
             mapCodes[charCode] = static_cast<wchar_t>(charOrd);
@@ -147,4 +146,4 @@ public:
 
 };
 
-#endif //FILEHELPER_H
+#endif //FILE_HELPER_H

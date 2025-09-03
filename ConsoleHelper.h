@@ -1,7 +1,7 @@
 #ifndef СONSOLE_HELPER_H
 #define CONSOLE_HELPER_H
-#include <iostream>
 
+#include <iostream>
 #include "CodeHelper.h"
 #include "FileHelper.h"
 
@@ -39,7 +39,7 @@ public:
 
 private:
 
-    static int onEncodeOption(bool isDebugMode) {
+    static int onEncodeOption(const bool isDebugMode) {
         std::cout << "\nEnter path to text file to encode it. (The text file must be encoded in utf-8):\n";
         std::string filePath;
         std::cin >> filePath;
@@ -69,7 +69,7 @@ private:
         return 0;
     }
 
-    static int onDecodeOption(bool isDebugMode) {
+    static int onDecodeOption(const bool isDebugMode) {
         try {
             if (isDebugMode) {
                 std::cout << "Enter path to the file with encoded text in debug mode:\n";
@@ -98,11 +98,9 @@ private:
                 return onErrorInvalidFilePath();
             }
 
-            EncryptionKey encryptionKey = FileHelper::parseKeyFile(keyFilePath);
+            const EncryptionKey encryptionKey = FileHelper::parseKeyFile(keyFilePath);
 
-            bool isSuccessful = CodeHelper::decodeTextDebugMode(encodedText, encryptionKey);
-
-            if (isSuccessful) {
+            if (bool isSuccessful = CodeHelper::decodeTextDebugMode(encodedText, encryptionKey)) {
                 std::cout << "Success!\n";
                 std::cout << "Decoded text was saved in file " + DECODED_FILE_NAME + "\n";
                 return 0;

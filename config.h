@@ -1,5 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+
 #include <string>
 
 const std::string PROGRAM_VERSION = "1.0";

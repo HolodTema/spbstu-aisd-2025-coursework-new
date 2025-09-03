@@ -1,11 +1,11 @@
 #ifndef CODE_HELPER_H
 #define CODE_HELPER_H
+
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <limits>
-
 #include "config.h"
 #include "FileHelper.h"
 
