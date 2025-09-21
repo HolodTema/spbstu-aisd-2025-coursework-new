@@ -67,10 +67,6 @@ DecodingKey parseKeyFile(const std::string& filePath) {
 	}
 
 	DecodingKey decodingKey(fis);
-	if (fis.bad()) {
-		fis.close();
-		throw std::runtime_error("Error: unable to read key-file.");
-	}
 	fis.close();
 	return decodingKey;
 }
