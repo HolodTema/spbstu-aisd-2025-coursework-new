@@ -1,7 +1,5 @@
 #include "DecodingKey.hpp"
-
 #include <limits>
-
 #include "config.h"
 
 //todo fis is fail() without fail..
@@ -12,7 +10,7 @@ DecodingKey::DecodingKey(std::istream& is):
 	is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	is >> residualZeroes_;
 	if (!is) {
-		std::cout << "fail after residual zeroes\n";
+		throw std::runtime_error("Error: unable to read key-file.");
 	}
 	is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
@@ -20,7 +18,7 @@ DecodingKey::DecodingKey(std::istream& is):
 	is >> mapCodesSize;
 	is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	if (!is) {
-		std::cout << "fail after map codes size\n";
+		throw std::runtime_error("Error: unable to read key-file.");
 	}
 	mapCodes_ = HashMap<std::string, wchar_t>(mapCodesSize);
 	std::string line;
@@ -36,7 +34,7 @@ DecodingKey::DecodingKey(std::istream& is):
 		std::string charCode = line.substr(line.find(delim) + 1);
 		mapCodes_.insert(charCode, static_cast<wchar_t>(charOrd));
 		if (!is) {
-			std::cout << "fail after " << charCode << "\n";
+			throw std::runtime_error("Error: unable to read key-file.");
 		}
 	}
 }

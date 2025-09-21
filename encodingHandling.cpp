@@ -1,6 +1,5 @@
 #include "encodingHandling.hpp"
 #include <limits>
-
 #include "config.h"
 #include "fileHandling.hpp"
 
@@ -75,7 +74,11 @@ namespace {
 	}
 
 	int getResidualZeroes(const std::string& encodedText) {
-		return static_cast<int>(encodedText.size() % 8);
+		int result = static_cast<int>(8 - (encodedText.size() % 8));
+		if (result == 8) {
+			return 0;
+		}
+		return result;
 	}
 }
 
@@ -102,7 +105,11 @@ void encodeText(const std::wstring& textToEncode, bool isDebugMode) {
 	HashMap<wchar_t, std::string> mapCodes = convertCharInfoListToMapCodes(listCharInfo);
 	std::string encodedText = generateEncodedTextDebugMode(textToEncode, mapCodes);
 
-	EncodingKey encodingKey(mapCodes, getResidualZeroes(encodedText));
+	int residualZeroes = 0;
+	if (!isDebugMode) {
+		residualZeroes = getResidualZeroes(encodedText);
+	}
+	EncodingKey encodingKey(mapCodes, residualZeroes);
 	saveKeyFile(encodingKey);
 
 	if (isDebugMode) {

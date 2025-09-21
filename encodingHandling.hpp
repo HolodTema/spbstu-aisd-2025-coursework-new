@@ -1,9 +1,7 @@
 #ifndef ENCODING_HANDLING_HPP
 #define ENCODING_HANDLING_HPP
-#include <string>
 
-#include "HashMap.hpp"
-#include "EncodingKey.hpp"
+#include <string>
 #include "fileHandling.hpp"
 
 struct CharInfo {
@@ -26,4 +24,4 @@ void encodeText(const std::wstring& textToEncode, bool isDebugMode);
 
 void decodeTextDebugMode(const std::string& encodedText, const DecodingKey& decodingKey);
 
-#endif //ENCODING_HANDLING_HPP
+#endif

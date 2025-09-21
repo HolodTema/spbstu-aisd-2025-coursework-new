@@ -43,7 +43,7 @@ public:
 		}
 	}
 
-	ArrayList(ArrayList&& other):
+	ArrayList(ArrayList&& other) noexcept:
 		capacity_(other.capacity_),
 		size_(other.size_),
 		array_(other.array_)

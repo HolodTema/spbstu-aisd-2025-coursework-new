@@ -18,4 +18,6 @@ add_executable(CourseworkNew main.cpp
         encodingHandling.cpp
         consoleHandling.cpp
         consoleHandling.hpp
+        ScopeGuard.cpp
+        ScopeGuard.hpp
 )

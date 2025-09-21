@@ -1,7 +1,4 @@
 #include "EncodingKey.hpp"
-
-#include <limits>
-
 #include "config.h"
 
 HashMap<wchar_t, std::string> EncodingKey::getMapCodes() const {

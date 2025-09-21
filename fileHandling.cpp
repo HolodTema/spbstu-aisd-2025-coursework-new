@@ -3,6 +3,7 @@
 #include <codecvt>
 #include <fstream>
 #include "config.h"
+#include "ScopeGuard.hpp"
 
 std::wstring readFileToEncode(const std::string& filePath) {
 	std::wifstream in(filePath);
@@ -11,11 +12,13 @@ std::wstring readFileToEncode(const std::string& filePath) {
 		throw std::logic_error("Error: unable to open file to decode it.");
 	}
 
+	ScopeGuard scopeGuard(in);
+
 	std::wstring text;
-	std::wstring line;
+	wchar_t ch;
 	in.imbue(std::locale(in.getloc(), new std::codecvt_utf8<wchar_t>));
-	while (std::getline<wchar_t>(in, line, L'\n')) {
-		text += line + L'\n';
+	while (in >> std::noskipws >> ch) {
+		text += ch;
 	}
 	in.close();
 	return text;
@@ -47,6 +50,9 @@ std::string readEncodedFileBinaryMode(const std::string& filePath) {
 	char charSingleByte;
 	while (fin.get(charSingleByte)) {
 		std::bitset<8> bitsetSingleByte(charSingleByte);
+		if (charSingleByte == 0) {
+			std::cout << "zero";
+		}
 		result += bitsetSingleByte.to_string();
 	}
 	fin.close();
@@ -107,9 +113,9 @@ void saveEncodedFileBinaryMode(std::string& encodedText, const int& residualZero
 		throw std::runtime_error("Error: unable to write encoded file.");
 	}
 
-	const size_t listBytesSize = (encodedText.size() + 7) / 8;
+	const size_t listBytesSize = encodedText.size() / 8;
 	ArrayList<unsigned char> listBytes(listBytesSize, 0);
-	for (int i = 0; i < listBytes.size(); ++i) {
+	for (int i = 0; i < encodedText.size(); ++i) {
 		if (encodedText[i] == '1') {
 			listBytes.get(i / 8) |= (1 << (7 - (i % 8)));
 		}
