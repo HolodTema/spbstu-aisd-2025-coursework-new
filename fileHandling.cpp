@@ -50,9 +50,6 @@ std::string readEncodedFileBinaryMode(const std::string& filePath) {
 	char charSingleByte;
 	while (fin.get(charSingleByte)) {
 		std::bitset<8> bitsetSingleByte(charSingleByte);
-		if (charSingleByte == 0) {
-			std::cout << "zero";
-		}
 		result += bitsetSingleByte.to_string();
 	}
 	fin.close();
