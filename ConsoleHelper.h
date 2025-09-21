@@ -113,12 +113,10 @@ private:
             std::cout << e.what() << std::endl;
             return 1;
         }
-        catch (const UnableToOpenEncodedTextFile& e) {
+        catch (const UnableToOpenEncodedTextFileException& e) {
             std::cout << e.what() << std::endl;
             return 1;
         }
-
-
     }
 
     static int onErrorInvalidOption() {

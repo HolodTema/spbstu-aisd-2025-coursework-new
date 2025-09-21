@@ -9,4 +9,4 @@ const std::string ENCODED_DEBUG_MODE_FILE_NAME = "encodedText.txt";
 const std::string ENCODED_FILE_NAME = "encodedText.bin";
 const std::string DECODED_FILE_NAME = "decodedText.txt";
 
-#endif //CONFIG_H
+#endif

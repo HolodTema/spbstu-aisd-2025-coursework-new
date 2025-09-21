@@ -5,16 +5,12 @@
 
 class UnableToParseKeyFileException final: public std::exception {
 public:
-    const char* what() const noexcept override {
-        return "Error: unable to parse key-file.\n";
-    }
+    const char* what() const noexcept override;
 };
 
-class UnableToOpenEncodedTextFile final: public std::exception {
+class UnableToOpenEncodedTextFileException final: public std::exception {
 public:
-    const char* what() const noexcept override {
-        return "Error: unable to open file with encoded text to decode it.\n";
-    }
+    const char* what() const noexcept override;
 };
 
-#endif //EXCEPTIONS_H
+#endif

@@ -1,41 +1,38 @@
 #ifndef CODE_HELPER_H
 #define CODE_HELPER_H
 
-#include <algorithm>
 #include <string>
-#include <vector>
-#include <unordered_map>
 #include <limits>
 #include "config.h"
 #include "FileHelper.h"
+#include "HashMap.hpp"
 
 class CodeHelper {
 public:
-
     static bool encodeText(const std::wstring& textToEncode, bool isDebugMode) {
-        std::unordered_map<wchar_t, int> mapCharsWithAmount;
+        HashMap<wchar_t, int> mapCharsWithAmount(textToEncode.size());
         for (wchar_t ch : textToEncode) {
             if (mapCharsWithAmount.contains(ch)) {
-                mapCharsWithAmount[ch] += 1;
+                mapCharsWithAmount.insert(ch, mapCharsWithAmount.get(ch)+1);
             }
             else {
-                mapCharsWithAmount[ch] = 1;
+                mapCharsWithAmount.insert(ch, 1);
             }
         }
 
-        std::vector<CharInfo> vectorCharInfo;
-        for (std::pair<wchar_t, int> pair : mapCharsWithAmount) {
-            vectorCharInfo.push_back(CharInfo(pair.first, pair.second, std::string()));
-        }
+        ArrayList<CharInfo> listCharInfo(mapCharsWithAmount.amountElements());
 
-        std::sort(vectorCharInfo.begin(), vectorCharInfo.end(), CharInfo::compare);
-
-        handleEncoding(vectorCharInfo.begin(), vectorCharInfo.end(), textToEncode.size());
-
-        std::unordered_map<wchar_t, std::string> mapCodes = convertCharInfoVectorToCodesMap(vectorCharInfo);
+        auto iterationCallback = [&listCharInfo](HashMap<wchar_t, int>::Pair& pair) {
+            listCharInfo.add(CharInfo(pair.key, pair.value, std::string()));
+            return true;
+        };
+        mapCharsWithAmount.forEach(iterationCallback);
+        listCharInfo.sort(CharInfo::compare);
+        handleEncoding(listCharInfo, 0, listCharInfo.size(), textToEncode.size());
+        HashMap<wchar_t, std::string> mapCodes = convertCharInfoVectorToCodesMap(listCharInfo);
         std::string encodedText = generateEncodedTextDebugMode(textToEncode, mapCodes);
 
-        std::string textKeyFile = generateKeyFileText(vectorCharInfo, getResidualZeroes(encodedText));
+        std::string textKeyFile = generateKeyFileText(listCharInfo, getResidualZeroes(encodedText));
         if (!FileHelper::saveKeyFile(textKeyFile)) {
             return false;
         }
@@ -56,11 +53,11 @@ public:
     static bool decodeTextDebugMode(const std::string& encodedText, const EncryptionKey& encryptionKey) {
         std::wstring result;
         std::string currentCode;
-        std::unordered_map<std::string, wchar_t> mapCodes = encryptionKey.getMapCodes();
+        HashMap<std::string, wchar_t> mapCodes = encryptionKey.getMapCodes();
         for (int i = 0; i < encodedText.size()-encryptionKey.getResidualZeroes(); ++i) {
             currentCode += encodedText[i];
             if (mapCodes.contains(currentCode)) {
-                result += mapCodes[currentCode];
+                result += mapCodes.get(currentCode);
                 currentCode.clear();
             }
         }
@@ -69,19 +66,24 @@ public:
     }
 
 private:
-
     struct CharInfo {
         wchar_t ch;
         int amount;
         std::string code;
 
-        static bool compare(const CharInfo& lhs, const CharInfo& rhs) {
-            return lhs.amount > rhs.amount;
+        static int compare(const CharInfo& lhs, const CharInfo& rhs) {
+            if (lhs.amount > rhs.amount) {
+                return -1;
+            }
+            if (lhs.amount == rhs.amount) {
+                return 0;
+            }
+            return 1;
         }
     };
 
-    static void handleEncoding(std::vector<CharInfo>::iterator beginIter, std::vector<CharInfo>::iterator endIter, const int& textLen) {
-        if (beginIter == endIter) {
+    static void handleEncoding(ArrayList<CharInfo>& listCharInfo, const size_t& low, const size_t& high, const int& textLen) {
+        if (low == high) {
             return;
         }
 
@@ -92,70 +94,71 @@ private:
         int targetSecondPartLen = 0;
 
         int minDifference = std::numeric_limits<int>::max();
-        auto borderIter = beginIter;
+        auto borderCounter = low;
 
-        auto currentIter = beginIter;
-        while (currentIter != endIter) {
-            firstPart += currentIter->amount;
-            secondPart -= currentIter->amount;
+        for (size_t currentCounter = low; currentCounter < high; ++currentCounter) {
+            CharInfo charInfo = listCharInfo.get(currentCounter);
+            firstPart += charInfo.amount;
+            secondPart -= charInfo.amount;
             if (std::abs(firstPart - secondPart) < minDifference) {
                 minDifference = std::abs(firstPart - secondPart);
-                borderIter = currentIter;
+                borderCounter = currentCounter;
                 targetFirstPartLen = firstPart;
                 targetSecondPartLen = secondPart;
             }
-            ++currentIter;
         }
 
-        borderIter++;
-        if (borderIter == endIter) {
+        borderCounter++;
+        if (borderCounter == high) {
             return;
         }
 
-        addZeroToCode(beginIter, borderIter);
-        addOneToCode(borderIter, endIter);
+        addZeroToCode(listCharInfo, low, borderCounter);
+        addOneToCode(listCharInfo, borderCounter, high);
 
-        handleEncoding(beginIter, borderIter, targetFirstPartLen);
-        handleEncoding(borderIter, endIter, targetSecondPartLen);
+        handleEncoding(listCharInfo, low, borderCounter, targetFirstPartLen);
+        handleEncoding(listCharInfo, borderCounter, high, targetSecondPartLen);
     }
 
-    static void addZeroToCode(std::vector<CharInfo>::iterator beginIter, std::vector<CharInfo>::iterator endIter) {
-        while (beginIter != endIter) {
-            beginIter->code += '0';
-            ++beginIter;
+    static void addZeroToCode(ArrayList<CharInfo>& listCharInfo, size_t low, size_t high) {
+        while (low != high) {
+            listCharInfo.get(low).code += '0';
+            ++low;
         }
     }
 
-    static void addOneToCode(std::vector<CharInfo>::iterator beginIter, std::vector<CharInfo>::iterator endIter) {
-        while (beginIter != endIter) {
-            beginIter->code += '1';
-            ++beginIter;
+    static void addOneToCode(ArrayList<CharInfo>& listCharInfo, size_t low, size_t high) {
+        while (low != high) {
+            listCharInfo.get(low).code += '1';
+            ++low;
         }
     }
 
-    static std::string generateKeyFileText(const std::vector<CharInfo>& vectorCharInfo, int residualZeroes) {
+    static std::string generateKeyFileText(const ArrayList<CharInfo>& listCharInfo, int residualZeroes) {
         std::string result = "Key-file for Shannon-Fano encoding. Version ";
         result += PROGRAM_VERSION + "\n";
         result += std::to_string(residualZeroes) + "\n";
-        for (CharInfo charInfo : vectorCharInfo) {
+        for (int i = 0; i < listCharInfo.size(); ++i) {
+            CharInfo charInfo = listCharInfo.get(i);
             unsigned int ord = static_cast<unsigned int>(charInfo.ch);
             result += std::to_string(ord) + " " + charInfo.code + "\n";
         }
         return result;
     }
 
-    static std::unordered_map<wchar_t, std::string> convertCharInfoVectorToCodesMap(const std::vector<CharInfo>& vectorCharInfo) {
-        std::unordered_map<wchar_t, std::string> map;
-        for (const CharInfo& charInfo : vectorCharInfo) {
-            map[charInfo.ch] = charInfo.code;
+    static HashMap<wchar_t, std::string> convertCharInfoVectorToCodesMap(const ArrayList<CharInfo>& listCharInfo) {
+        HashMap<wchar_t, std::string> map(listCharInfo.size());
+        for (int i = 0; i < listCharInfo.size(); ++i) {
+            CharInfo charInfo = listCharInfo.get(i);
+            map.insert(charInfo.ch, charInfo.code);
         }
         return map;
     }
 
-    static std::string generateEncodedTextDebugMode(const std::wstring& textToEncode, const std::unordered_map<wchar_t, std::string>& mapCodes) {
+    static std::string generateEncodedTextDebugMode(const std::wstring& textToEncode, const HashMap<wchar_t, std::string>& mapCodes) {
         std::string result;
         for (wchar_t ch : textToEncode) {
-            result += mapCodes.at(ch);
+            result += mapCodes.get(ch);
         }
         return result;
     }

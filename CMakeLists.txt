@@ -10,4 +10,8 @@ add_executable(CourseworkNew main.cpp
         config.h
         EncryptionKey.h
         exceptions.h
+        exceptions.cpp
+        ArrayList.hpp
+        LinkedList.hpp
+        HashMap.hpp
 )

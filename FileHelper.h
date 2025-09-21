@@ -31,7 +31,7 @@ public:
         std::ifstream in(filePath);
         if (! in.is_open()) {
             in.close();
-            throw UnableToOpenEncodedTextFile();
+            throw UnableToOpenEncodedTextFileException();
         }
         std::string text;
         std::string line;
@@ -46,7 +46,7 @@ public:
         std::ifstream in(filePath, std::ios::binary);
         if (! in.is_open()) {
             in.close();
-            throw UnableToOpenEncodedTextFile();
+            throw UnableToOpenEncodedTextFileException();
         }
 
         std::string result;
@@ -132,13 +132,13 @@ public:
         int residualZeroes = 0;
         in >> residualZeroes;
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::unordered_map<std::string, wchar_t> mapCodes;
+        HashMap<std::string, wchar_t> mapCodes(100);
         std::string line;
         while (std::getline(in, line)) {
             const char* delim = " ";
             unsigned int charOrd = std::stoi(line.substr(0, line.find(delim)));
             std::string charCode = line.substr(line.find(delim) + 1);
-            mapCodes[charCode] = static_cast<wchar_t>(charOrd);
+            mapCodes.insert(charCode, static_cast<wchar_t>(charOrd));
         }
         in.close();
         return EncryptionKey(mapCodes, residualZeroes);

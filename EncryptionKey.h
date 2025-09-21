@@ -2,14 +2,14 @@
 #define ENCRYPTION_KEY_H
 
 #include <string>
-#include <unordered_map>
+#include "HashMap.hpp"
 
 class EncryptionKey {
 public:
 
     EncryptionKey() = default;
 
-    EncryptionKey(const std::unordered_map<std::string, wchar_t>& mapCodes, int residualZeroes):
+    EncryptionKey(HashMap<std::string, wchar_t>& mapCodes, int residualZeroes):
         mapCodes(mapCodes),
         residualZeroes(residualZeroes)
     { }
@@ -20,7 +20,7 @@ public:
 
     EncryptionKey(EncryptionKey&& rhs) = delete;
 
-    std::unordered_map<std::string, wchar_t> getMapCodes() const {
+    HashMap<std::string, wchar_t> getMapCodes() const {
         return mapCodes;
     }
 
@@ -30,7 +30,7 @@ public:
 
 private:
 
-    std::unordered_map<std::string, wchar_t> mapCodes;
+    HashMap<std::string, wchar_t> mapCodes;
     int residualZeroes = 0;
 };
 
